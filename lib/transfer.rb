@@ -15,16 +15,13 @@ class Transfer
   end 
 
   def execute_transaction
-
     if transfer_already_executed?
       return "Transaction has already been dealt with."
     elsif accounts_are_invalid?
-      self.status = "rejected"
       return "Transaction rejected. Please check your account balance."
-    else 
-      self.sender.balance -= self.amount
-      self.receiver.balance += self.amount
-      self.status = "complete"
+    else
+      confirm_execute_transaction
+      return "Transaction successful."
     end
   end
 
@@ -33,11 +30,19 @@ class Transfer
   end
 
   def accounts_are_invalid?
-    self.sender.balance < self.amount || self.sender.status == "closed" || self.receiver.status == "closed"
+    if self.sender.balance < self.amount || self.sender.status == "closed" || self.receiver.status == "closed"
+      self.status = "rejected"
+      return true
+    end
+  end
+
+  def confirm_execute_transaction
+    self.sender.balance -= self.amount
+    self.receiver.balance += self.amount
+    self.status = "complete"
   end
 
   def reverse_transfer
-
     if self.sender.valid? && self.receiver.valid? && self.status == "complete"
       self.sender.balance += self.amount
       self.receiver.balance -= self.amount
@@ -45,13 +50,5 @@ class Transfer
       return "Successful Reversal"
     end
   end
+  
 end
-
-
-# account1 = BankAccount.new("person1")
-# account2 = BankAccount.new("person2")
-# transfer1 = Transfer.new(account1, account2, 1500)
-
-# binding.pry
-# 0
-
